@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect
+from datetime import datetime
 import sqlite3
 import qrcode
 import os
@@ -23,6 +24,29 @@ def init_db():
     """)
     conn.commit()
     conn.close()
+
+def generate_nomor_seri(jenis):
+    tahun = datetime.now().year
+
+    kode = {
+        "Peserta": "PST",
+        "Pemateri": "PMT",
+        "Panitia": "PNT"
+    }.get(jenis, "UNK")
+
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    SELECT COUNT(*) FROM sertifikat
+    WHERE jenis = ? AND nomor_seri LIKE ?
+    """, (jenis, f"PLPN-{tahun}-{kode}-%"))
+
+    count = cursor.fetchone()[0] + 1
+    conn.close()
+
+    nomor_urut = str(count).zfill(4)
+    return f"PLPN-{tahun}-{kode}-{nomor_urut}"
 
 def generate_qr(nomor_seri):
     url = f"http://127.0.0.1:5000/verifikasi/{nomor_seri}"
@@ -87,6 +111,9 @@ def admin():
         """, (nomor_seri, nama, jenis, kegiatan, tanggal, status))
         conn.commit()
         conn.close()
+
+        # ✅ GENERATE QR OTOMATIS
+        generate_qr(nomor_seri)
 
         return redirect("/admin")
 
