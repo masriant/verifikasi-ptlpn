@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 *.pyo
 static/kwitansi/*
+static/sertifikat-logo/*
 static/sertifikat/*
 static/qr/*
 database.db

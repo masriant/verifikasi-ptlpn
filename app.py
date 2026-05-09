@@ -3,8 +3,8 @@ from datetime import datetime
 import sqlite3
 import qrcode
 import os
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
+# from reportlab.lib.pagesizes import A4
+# from reportlab.pdfgen import canvas
 # from reportlab.lib.colors import HexColor
 
 app = Flask(__name__)
@@ -33,12 +33,109 @@ def generate_qr(nomor_seri):
     file_path = os.path.join(qr_folder, f"{nomor_seri}.png")
     img.save(file_path)
 
+# =====================
+# SERTIFIKAT LOGO
+# =====================
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.colors import HexColor
+import os
+
+def generate_pdf_sertifikat_logo(nomor_seri, nama, jenis, kegiatan, tanggal):
+    file_path = f"static/sertifikat-logo/{nomor_seri}.pdf"
+    c = canvas.Canvas(file_path, pagesize=A4)
+    width, height = A4
+
+    emas = HexColor("#C9A227")
+    abu = HexColor("#444444")
+
+    # =====================
+    # BORDER EMAS
+    # =====================
+    c.setStrokeColor(emas)
+    c.setLineWidth(4)
+    c.rect(30, 30, width - 60, height - 60)
+
+    c.setLineWidth(1.5)
+    c.rect(45, 45, width - 90, height - 90)
+
+    # =====================
+    # LOGO (ATAS TENGAH)
+    # =====================
+    logo_path = "static/logo.png"
+    if os.path.exists(logo_path):
+        c.drawImage(
+            logo_path,
+            (width / 2) - 50,
+            height - 110,
+            width=100,
+            height=100,
+            mask='auto'
+        )
+
+        # =====================
+        # JUDUL
+        # =====================
+        c.setFillColor(emas)
+        c.setFont("Helvetica-Bold", 26)
+        c.drawCentredString(width / 2, height - 160, "SERTIFIKAT")
+
+        c.setFillColor(abu)
+        c.setFont("Helvetica", 13)
+        c.drawCentredString(width / 2, height - 195, "Diberikan kepada:")
+
+        # =====================
+        # NAMA
+        # =====================
+        c.setFont("Helvetica-Bold", 20)
+        c.drawCentredString(width / 2, height - 240, nama)
+
+        # =====================
+        # KETERANGAN
+        # =====================
+        c.setFont("Helvetica", 12)
+        c.drawCentredString(
+            width / 2,
+            height - 285,
+            f"Sebagai {jenis} pada kegiatan"
+        )
+
+        c.setFont("Helvetica-Bold", 13)
+        c.drawCentredString(width / 2, height - 310, kegiatan)
+
+        c.setFont("Helvetica", 11)
+        c.drawCentredString(width / 2, height - 340, f"Tanggal: {tanggal}")
+
+        # =====================
+        # NOMOR SERI
+        # =====================
+        c.setFont("Helvetica", 9)
+        c.drawString(60, 70, f"Nomor Seri: {nomor_seri}")
+
+        # =====================
+        # QR CODE
+        # =====================
+        qr_path = f"static/qr/{nomor_seri}.png"
+        if os.path.exists(qr_path):
+            c.drawImage(qr_path, width - 160, 60, width=90, height=90)
+
+            # =====================
+            # FOOTER
+            # =====================
+            c.setFont("Helvetica-Oblique", 9)
+            c.drawCentredString(
+                width / 2,
+                55,
+                "Sertifikat ini diterbitkan secara elektronik dan dapat diverifikasi melalui QR Code"
+            )
+
+            c.save()
 
 # =====================
 # SERTIFIKAT
 # =====================
-# from reportlab.lib.pagesizes import A4
-# from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 from reportlab.lib.colors import HexColor
 
 def generate_pdf_sertifikat(nomor_seri, nama, jenis, kegiatan, tanggal):
@@ -119,8 +216,8 @@ def generate_pdf_sertifikat(nomor_seri, nama, jenis, kegiatan, tanggal):
 # =====================
 # KWITANSI
 # =====================
-# from reportlab.lib.pagesizes import A4
-# from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 
 def generate_pdf_kwitansi(nomor_seri, nama, jenis, kegiatan, tanggal):
     file_path = f"static/kwitansi/{nomor_seri}.pdf"
@@ -276,6 +373,14 @@ def admin():
 
         # ✅ GENERATE QR OTOMATIS
         generate_qr(nomor_seri)
+        
+        generate_pdf_sertifikat_logo(
+            nomor_seri,
+            nama,
+            jenis,
+            kegiatan,
+            tanggal
+        )
         
         generate_pdf_sertifikat(
             nomor_seri,
