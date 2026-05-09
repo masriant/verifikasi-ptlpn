@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Verifikasi Sertifikat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial; background: #f5f6f8; }
+    .box {
+      max-width: 600px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .row { display: flex; justify-content: space-between; margin: 10px 0; }
+    .label { font-weight: bold; }
+    .valid { color: green; font-weight: bold; }
+    .invalid { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>VERIFIKASI SERTIFIKAT</h2>
+  <h4>PT Lembaga Persada Nusantara</h4>
+  <hr>
+
+  {% if status == "VALID" %}
+    <div class="row"><div class="label">Status</div><div class="valid">✅ VALID</div></div>
+    <div class="row"><div class="label">Nama</div><div>{{ nama }}</div></div>
+    <div class="row"><div class="label">Jenis</div><div>{{ jenis }}</div></div>
+    <div class="row"><div class="label">Kegiatan</div><div>{{ kegiatan }}</div></div>
+    <div class="row"><div class="label">Tanggal</div><div>{{ tanggal }}</div></div>
+  {% else %}
+    <div class="invalid">
+      ❌ Sertifikat TIDAK TERDAFTAR
+    </div>
+  {% endif %}
+
+  <div class="row">
+    <div class="label">Nomor Seri</div>
+    <div>{{ nomor_seri }}</div>
+  </div>
+
+</div>
+
+</body>
+</html>
