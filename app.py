@@ -4,10 +4,26 @@ import sqlite3
 import qrcode
 import os
 
+
 app = Flask(__name__)
 
 def connect_db():
     return sqlite3.connect("database.db")
+
+def generate_qr(nomor_seri):
+    # URL verifikasi (sementara lokal)
+    url = f"http://127.0.0.1:5000/verifikasi/{nomor_seri}"
+
+    # Pastikan folder static/qr ada
+    qr_folder = "static/qr"
+    os.makedirs(qr_folder, exist_ok=True)
+
+    # Generate QR
+    img = qrcode.make(url)
+
+    # Simpan file
+    file_path = os.path.join(qr_folder, f"{nomor_seri}.png")
+    img.save(file_path)
 
 def init_db():
     conn = connect_db()
@@ -25,6 +41,8 @@ def init_db():
     conn.commit()
     conn.close()
 
+
+
 def generate_nomor_seri(jenis):
     tahun = datetime.now().year
 
@@ -38,23 +56,24 @@ def generate_nomor_seri(jenis):
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT COUNT(*) FROM sertifikat
-    WHERE jenis = ? AND nomor_seri LIKE ?
-    """, (jenis, f"PLPN-{tahun}-{kode}-%"))
+        SELECT nomor_seri
+        FROM sertifikat
+        WHERE nomor_seri LIKE ?
+        ORDER BY nomor_seri DESC
+        LIMIT 1
+    """, (f"PLPN-{tahun}-{kode}-%",))
 
-    count = cursor.fetchone()[0] + 1
+    last = cursor.fetchone()
     conn.close()
 
-    nomor_urut = str(count).zfill(4)
-    return f"PLPN-{tahun}-{kode}-{nomor_urut}"
+    if last:
+        last_number = int(last[0].split("-")[-1])
+        next_number = last_number + 1
+    else:
+        next_number = 1
 
-def generate_qr(nomor_seri):
-    url = f"http://127.0.0.1:5000/verifikasi/{nomor_seri}"
-    img = qrcode.make(url)
-
-    path = f"static/qr/{nomor_seri}.png"
-    img.save(path)
-
+    return f"PLPN-{tahun}-{kode}-{str(next_number).zfill(4)}"
+    
 # =========================
 # ROUTE VERIFIKASI (WAJIB)
 # =========================
@@ -73,20 +92,20 @@ def verifikasi(nomor_seri):
     if data:
         nama, jenis, kegiatan, tanggal, status = data
         return render_template(
-    "verifikasi.html",
-    status=status,
-    nama=nama,
-    jenis=jenis,
-    kegiatan=kegiatan,
-    tanggal=tanggal,
-    nomor_seri=nomor_seri
-)
+            "verifikasi.html",
+            status=status,
+            nama=nama,
+            jenis=jenis,
+            kegiatan=kegiatan,
+            tanggal=tanggal,
+            nomor_seri=nomor_seri
+        )
     else:
         return render_template(
-    "verifikasi.html",
-    status="TIDAK VALID",
-    nomor_seri=nomor_seri
-)
+            "verifikasi.html",
+            status="TIDAK VALID",
+            nomor_seri=nomor_seri
+        )
 
 
 # ======================
@@ -95,19 +114,20 @@ def verifikasi(nomor_seri):
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
     if request.method == "POST":
-        nomor_seri = request.form["nomor_seri"]
         nama = request.form["nama"]
         jenis = request.form["jenis"]
         kegiatan = request.form["kegiatan"]
         tanggal = request.form["tanggal"]
+
+        nomor_seri = generate_nomor_seri(jenis)
         status = "VALID"
 
         conn = connect_db()
         cursor = conn.cursor()
         cursor.execute("""
-        INSERT OR REPLACE INTO sertifikat
-        (nomor_seri, nama, jenis, kegiatan, tanggal, status)
-        VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO sertifikat
+            (nomor_seri, nama, jenis, kegiatan, tanggal, status)
+            VALUES (?, ?, ?, ?, ?, ?)
         """, (nomor_seri, nama, jenis, kegiatan, tanggal, status))
         conn.commit()
         conn.close()
@@ -118,6 +138,7 @@ def admin():
         return redirect("/admin")
 
     return render_template("admin.html")
+
 
 
 if __name__ == "__main__":

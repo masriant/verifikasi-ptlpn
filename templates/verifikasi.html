@@ -34,23 +34,20 @@
     <div class="row"><div class="label">Kegiatan</div><div>{{ kegiatan }}</div></div>
     <div class="row"><div class="label">Tanggal</div><div>{{ tanggal }}</div></div>
   {% else %}
-    <div class="invalid">
-      ❌ Sertifikat TIDAK TERDAFTAR
-    </div>
+    <div class="invalid">❌ Sertifikat TIDAK TERDAFTAR</div>
   {% endif %}
 
   <div class="row">
     <div class="label">Nomor Seri</div>
     <div>{{ nomor_seri }}</div>
   </div>
+
   <div style="margin-top:20px; text-align:center;">
-  <img src="/static/qr/{{ nomor_seri }}.png" width="150">
-  <div style="font-size:12px; color:#777;">
-    Scan untuk verifikasi online
+    <img src="/static/qr/{{ nomor_seri }}.png" width="160">
+    <div style="font-size:12px; color:#777;">
+      Scan untuk verifikasi online
+    </div>
   </div>
-</div>
-
-
 </div>
 
 </body>
