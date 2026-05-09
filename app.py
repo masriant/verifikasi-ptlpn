@@ -62,74 +62,126 @@ def generate_pdf_sertifikat_logo(nomor_seri, nama, jenis, kegiatan, tanggal):
     # =====================
     # LOGO (ATAS TENGAH)
     # =====================
+    # logo_path = "static/logo.png"
+    # if os.path.exists(logo_path):
+    #     c.drawImage(
+    #         logo_path,
+    #         (width / 2) - 50,
+    #         height - 110,
+    #         width=100,
+    #         height=100,
+    #         mask='auto'
+    #     )
+    # =====================
+    # LOGO (ATAS TENGAH - AMAN BORDER)
+    # =====================
     logo_path = "static/logo.png"
     if os.path.exists(logo_path):
+        logo_width = 95
+        logo_height = 95
+
         c.drawImage(
             logo_path,
-            (width / 2) - 50,
-            height - 110,
-            width=100,
-            height=100,
+            (width - logo_width) / 2,
+            height - 170,   # ✅ DITURUNKAN (AMAN)
+            width=logo_width,
+            height=logo_height,
             mask='auto'
         )
+    # =====================
+    # JUDUL
+    # =====================
+    c.setFillColor(emas)
+    c.setFont("Helvetica-Bold", 28)
+    c.drawCentredString(width / 2, height - 200, "SERTIFIKAT")
 
-        # =====================
-        # JUDUL
-        # =====================
-        c.setFillColor(emas)
-        c.setFont("Helvetica-Bold", 26)
-        c.drawCentredString(width / 2, height - 160, "SERTIFIKAT")
+    c.setFillColor(abu)
+    c.setFont("Helvetica", 13)
+    c.drawCentredString(width / 2, height - 220, "Diberikan kepada:")
 
-        c.setFillColor(abu)
-        c.setFont("Helvetica", 13)
-        c.drawCentredString(width / 2, height - 195, "Diberikan kepada:")
+    # =====================
+    # NAMA
+    # =====================
+    c.setFont("Helvetica-Bold", 20)
+    c.drawCentredString(width / 2, height - 245, nama)
 
-        # =====================
-        # NAMA
-        # =====================
-        c.setFont("Helvetica-Bold", 20)
-        c.drawCentredString(width / 2, height - 240, nama)
-
-        # =====================
-        # KETERANGAN
-        # =====================
-        c.setFont("Helvetica", 12)
-        c.drawCentredString(
-            width / 2,
-            height - 285,
+    # =====================
+    # KETERANGAN
+    # =====================
+    c.setFont("Helvetica", 12)
+    c.drawCentredString(
+        width / 2,
+        height - 330,
             f"Sebagai {jenis} pada kegiatan"
         )
 
-        c.setFont("Helvetica-Bold", 13)
-        c.drawCentredString(width / 2, height - 310, kegiatan)
+    c.setFont("Helvetica-Bold", 13)
+    c.drawCentredString(width / 2, height - 355, kegiatan)
 
-        c.setFont("Helvetica", 11)
-        c.drawCentredString(width / 2, height - 340, f"Tanggal: {tanggal}")
+    c.setFont("Helvetica", 11)
+    c.drawCentredString(width / 2, height - 385, f"Tanggal: {tanggal}")
 
-        # =====================
-        # NOMOR SERI
-        # =====================
-        c.setFont("Helvetica", 9)
-        c.drawString(60, 70, f"Nomor Seri: {nomor_seri}")
+    c.setFont("Helvetica-Bold", 11)
+    c.drawCentredString(width / 2, height - 410, f"di Jakarta Pusat")
 
-        # =====================
-        # QR CODE
-        # =====================
-        qr_path = f"static/qr/{nomor_seri}.png"
-        if os.path.exists(qr_path):
-            c.drawImage(qr_path, width - 160, 60, width=90, height=90)
+    # =====================
+    # NOMOR SERI
+    # =====================
+    c.setFont("Helvetica", 8)
+    c.drawString(60, 60, f"Nomor Seri: {nomor_seri}")
 
-            # =====================
-            # FOOTER
-            # =====================
-            c.setFont("Helvetica-Oblique", 9)
-            c.drawCentredString(
-                width / 2,
-                55,
-                "Sertifikat ini diterbitkan secara elektronik dan dapat diverifikasi melalui QR Code"
-            )
+    # =====================
+    # QR CODE
+    # =====================
+    qr_path = f"static/qr/{nomor_seri}.png"
+    if os.path.exists(qr_path):
+        c.drawImage(qr_path, width - 150, 70, width=90, height=90)
 
-            c.save()
+    # =====================
+    # TANDA TANGAN
+    # =====================
+    ttd_path = "static/ttd-direktur.png"
+    if os.path.exists(ttd_path):
+        c.drawImage(
+            ttd_path,
+            width / 2 - 100,
+            90,
+            width=150,
+            height=65,
+            mask='auto'
+        )
+
+    # Nama & Jabatan
+    c.setFont("Helvetica-Bold", 10)
+    c.drawCentredString(width / 2 - 50, 90, "Direktur")
+
+    c.setFont("Helvetica", 10)
+    c.drawCentredString(width / 2 - 50, 75, "PT Lembaga Persada Nusantara")
+
+    # =====================
+    # STEMPEL
+    # =====================
+    stempel_path = "static/stempel.png"
+    if os.path.exists(stempel_path):
+        c.drawImage(
+            stempel_path,
+            width / 2,
+            85,
+            width=120,
+            height=120,
+            mask='auto'
+        )
+    # =====================
+    # FOOTER
+    # =====================
+    c.setFont("Helvetica-Oblique", 8)
+    c.drawCentredString(
+            width / 2,
+            50,
+            "Sertifikat ini diterbitkan secara elektronik dan dapat diverifikasi melalui QR Code"
+        )
+
+    c.save()
 
 # =====================
 # SERTIFIKAT
@@ -266,14 +318,14 @@ def init_db():
     conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS sertifikat (
-        nomor_seri TEXT PRIMARY KEY,
-        nama TEXT,
-        jenis TEXT,
-        kegiatan TEXT,
-        tanggal TEXT,
-        status TEXT
-    )
+        CREATE TABLE IF NOT EXISTS sertifikat (
+            nomor_seri TEXT PRIMARY KEY,
+            nama TEXT,
+            jenis TEXT,
+            kegiatan TEXT,
+            tanggal TEXT,
+            status TEXT
+        )
     """)
     conn.commit()
     conn.close()

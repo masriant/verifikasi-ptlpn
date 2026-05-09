@@ -36,3 +36,9 @@ PLPN-2026-PST-0001 | Masrianto | Peserta | Pelatihan XXX | 2026-05-12 | VALID
 
 Verifikasi Sertifikat
 👉 http://127.0.0.1:5000/verifikasi/PLPN-2026-PST-0001
+
+
+pip install qrcode[pil]
+
+pip install reportlab
+
