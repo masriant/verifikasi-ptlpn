@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Sertifikat | PLPN</title>
+  <style>
+    body { font-family: Arial; background: #f4f6f8; }
+    .box {
+      max-width: 500px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0 15px;
+    }
+    button {
+      padding: 10px;
+      width: 100%;
+      background: #1f4e79;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Panel Admin Sertifikat</h2>
+  <form method="POST">
+
+    <label>Nomor Seri</label>
+    <input type="text" name="nomor_seri" required>
+
+    <label>Nama</label>
+    <input type="text" name="nama" required>
+
+    <label>Jenis Sertifikat</label>
+    <select name="jenis">
+      <option>Peserta</option>
+      <option>Pemateri</option>
+      <option>Panitia</option>
+    </select>
+
+    <label>Kegiatan</label>
+    <input type="text" name="kegiatan" required>
+
+    <label>Tanggal</label>
+    <input type="date" name="tanggal" required>
+
+    <button type="submit">SIMPAN SERTIFIKAT</button>
+  </form>
+</div>
+
+</body>
+</html>

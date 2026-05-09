@@ -1,0 +1,38 @@
+
+# Tahap awal
+# Linux
+
+python3 --version
+
+python3 -m venv .venv
+
+source .venv/bin/activate
+
+pip install -r requirements.txt
+
+# Aktifkan
+
+tmux
+
+source .venv/bin/activate
+
+python app.py
+
+ctrl + B D
+
+tmux attach
+
+# Jalankan
+🔐 Akses Saat Aktif (Local)
+
+Panel Admin
+👉 http://127.0.0.1:5000/admin
+
+1️⃣ DATABASE (SQLite – PALING PRAKTIS)
+✅ Struktur Tabel
+
+🧾 Contoh isi data
+PLPN-2026-PST-0001 | Masrianto | Peserta | Pelatihan XXX | 2026-05-12 | VALID
+
+Verifikasi Sertifikat
+👉 http://127.0.0.1:5000/verifikasi/PLPN-2026-PST-0001
