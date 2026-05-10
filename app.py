@@ -1068,6 +1068,79 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
 # ======================
+# PANEL ADMIN EXPORT EXCEL JENIS
+# ======================
+from openpyxl import Workbook
+
+@app.route("/admin/export/excel/<int:tahun>/<jenis>")
+def export_excel_jenis(tahun, jenis):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT nomor_seri, nama, jenis, kegiatan, tanggal
+        FROM sertifikat
+        WHERE nomor_seri LIKE ? AND jenis = ?
+        ORDER BY tanggal ASC
+    """, (f"PLPN-{tahun}-%", jenis))
+    data = cursor.fetchall()
+    conn.close()
+
+    os.makedirs("static/laporan", exist_ok=True)
+    file_path = f"static/laporan/Laporan_{jenis}_{tahun}.xlsx"
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = f"{jenis} {tahun}"
+
+    ws.append(["No", "Nomor Seri", "Nama", "Jenis", "Kegiatan", "Tanggal"])
+    for i, row in enumerate(data, start=1):
+        ws.append([i, *row])
+
+    wb.save(file_path)
+    return redirect(f"/{file_path}")
+# ======================
+# PANEL ADMIN EXPORT PDF JENIS
+# ======================
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+
+@app.route("/admin/export/pdf/<int:tahun>/<jenis>")
+def export_pdf_jenis(tahun, jenis):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT nomor_seri, nama, jenis, kegiatan, tanggal
+        FROM sertifikat
+        WHERE nomor_seri LIKE ? AND jenis = ?
+        ORDER BY tanggal ASC
+    """, (f"PLPN-{tahun}-%", jenis))
+    data = cursor.fetchall()
+    conn.close()
+
+    os.makedirs("static/laporan", exist_ok=True)
+    file_path = f"static/laporan/Laporan_{jenis}_{tahun}.pdf"
+
+    c = canvas.Canvas(file_path, pagesize=A4)
+    w, h = A4
+
+    c.setFont("Helvetica-Bold", 16)
+    c.drawCentredString(w/2, h-50, f"LAPORAN {jenis.upper()} TAHUN {tahun}")
+    c.setFont("Helvetica", 10)
+
+    y = h - 90
+    for i, row in enumerate(data, start=1):
+        if y < 60:
+            c.showPage()
+            y = h - 60
+        c.drawString(
+            40, y,
+            f"{i}. {row[0]} | {row[1]} | {row[3]} | {row[4]}"
+        )
+        y -= 14
+
+    c.save()
+    return redirect(f"/{file_path}")
+# ======================
 # PANEL ADMIN EXPORT PDF TAHUN
 # ======================
 @app.route("/admin/export/pdf/<int:tahun>")
