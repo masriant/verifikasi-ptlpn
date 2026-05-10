@@ -56,6 +56,106 @@ def generate_qr(nomor_seri):
     img.save(file_path)
 
 # =====================
+# SERTIFIKAT DUOLOGO LANDSCAPE
+# =====================
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.colors import HexColor
+from reportlab.pdfgen import canvas
+import os
+
+def generate_pdf_sertifikat_landscape(nomor_seri, nama, jenis, kegiatan, tanggal):
+    file_path = f"static/sertifikat/{nomor_seri}_LANDSCAPE.pdf"
+    c = canvas.Canvas(file_path, pagesize=landscape(A4))
+    width, height = landscape(A4)
+
+    emas = HexColor("#C9A227")
+    abu = HexColor("#444444")
+
+    # =====================
+    # BORDER EMAS (AMAN)
+    # =====================
+    c.setStrokeColor(emas)
+    c.setLineWidth(4)
+    c.rect(30, 30, width - 60, height - 60)
+
+    c.setLineWidth(1.5)
+    c.rect(45, 45, width - 90, height - 90)
+
+    # =====================
+    # LOGO KIRI–KANAN (AUTO-SCALE)
+    # =====================
+    draw_logo_scaled(c, "static/logo.png", x=60, y=height - 150, max_w=70, max_h=70)
+    draw_logo_scaled(c, "static/logo.png", x=width - 130, y=height - 150, max_w=70, max_h=70)
+
+    # =====================
+    # JUDUL (TENGAH)
+    # =====================
+    c.setFillColor(emas)
+    c.setFont("Helvetica-Bold", 28)
+    c.drawCentredString(width / 2, height - 125, "SERTIFIKAT")
+
+    c.setFillColor(abu)
+    c.setFont("Helvetica", 12)
+    c.drawCentredString(width / 2, height - 155, "PT Lembaga Persada Nusantara")
+
+    # =====================
+    # ISI (LEBIH LAPANG)
+    # =====================
+    c.setFont("Helvetica", 13)
+    c.drawCentredString(width / 2, height - 200, "Diberikan kepada:")
+
+    c.setFont("Helvetica-Bold", 22)
+    c.drawCentredString(width / 2, height - 235, nama)
+
+    c.setFont("Helvetica", 13)
+    c.drawCentredString(width / 2, height - 275, f"Sebagai {jenis} pada kegiatan")
+
+    c.setFont("Helvetica-Bold", 14)
+    c.drawCentredString(width / 2, height - 305, kegiatan)
+
+    c.setFont("Helvetica", 12)
+    c.drawCentredString(width / 2, height - 335, f"Tanggal: {tanggal}")
+
+    # =====================
+    # NOMOR SERI
+    # =====================
+    c.setFont("Helvetica", 9)
+    c.drawString(60, 70, f"Nomor Seri: {nomor_seri}")
+
+    # =====================
+    # QR
+    # =====================
+    qr_path = f"static/qr/{nomor_seri}.png"
+    if os.path.exists(qr_path):
+        c.drawImage(qr_path, width - 160, 60, width=90, height=90, mask='auto')
+
+    # =====================
+    # TTD & STEMPEL
+    # =====================
+    ttd_path = "static/ttd-direktur.png"
+    if os.path.exists(ttd_path):
+        c.drawImage(ttd_path, width/2 - 140, 90, width=160, height=60, mask='auto')
+
+    c.setFont("Helvetica-Bold", 10)
+    c.drawCentredString(width/2 - 60, 75, "Direktur")
+    c.setFont("Helvetica", 10)
+    c.drawCentredString(width/2 - 60, 60, "PT Lembaga Persada Nusantara")
+
+    stempel_path = "static/stempel.png"
+    if os.path.exists(stempel_path):
+        c.drawImage(stempel_path, width/2 + 10, 70, width=120, height=120, mask='auto')
+
+    # =====================
+    # FOOTER
+    # =====================
+    c.setFont("Helvetica-Oblique", 9)
+    c.drawCentredString(
+        width / 2, 45,
+        "Sertifikat ini diterbitkan secara elektronik dan dapat diverifikasi melalui QR Code"
+    )
+
+    c.save()
+# =====================
 # SERTIFIKAT DUOLOGO
 # =====================
 from reportlab.lib.pagesizes import A4
@@ -96,13 +196,13 @@ def generate_pdf_sertifikat_duo(
     # =====================
     logo_plpn = "static/logo.png"
     if os.path.exists(logo_plpn):
-        c.drawImage(
-            logo_plpn,
-            60,               # kiri aman dari border
-            height - 170,     # aman dari border atas
-            width=70,
-            height=70,
-            mask='auto'
+        draw_logo_scaled(
+            c,
+            "static/logo.png",
+            x=60,
+            y=height - 170,
+            max_w=70,
+            max_h=70
         )
 
     # =====================
@@ -110,13 +210,13 @@ def generate_pdf_sertifikat_duo(
     # =====================
     logo_mitra = "static/logo.png"
     if os.path.exists(logo_mitra):
-        c.drawImage(
-            logo_mitra,
-            width - 130,      # kanan aman dari border
-            height - 170,
-            width=70,
-            height=70,
-            mask='auto'
+        draw_logo_scaled(
+            c,
+            "static/logo.png",
+            x=width - 130,
+            y=height - 170,
+            max_w=70,
+            max_h=70
         )
 
     # =====================
@@ -655,6 +755,7 @@ def admin():
         jenis = request.form["jenis"]
         kegiatan = request.form["kegiatan"]
         tanggal = request.form["tanggal"]
+        format_sertifikat = request.form.get("format", "portrait")
 
         nomor_seri = generate_nomor_seri(jenis)
         status = "VALID"
@@ -669,44 +770,85 @@ def admin():
         conn.commit()
         conn.close()
 
-        # ✅ GENERATE QR OTOMATIS
+       # ✅ GENERATE QR OTOMATIS
         generate_qr(nomor_seri)
-        
-        generate_pdf_sertifikat_duo(
-            nomor_seri,
-            nama,
-            jenis,
-            kegiatan,
-            tanggal
-        )
-        
-        generate_pdf_sertifikat_logo(
-            nomor_seri,
-            nama,
-            jenis,
-            kegiatan,
-            tanggal
-        )
-        
-        generate_pdf_sertifikat(
-            nomor_seri,
-            nama,
-            jenis,
-            kegiatan,
-            tanggal
-        )
-        
-        generate_pdf_kwitansi(
-            nomor_seri,
-            nama,
-            jenis,
-            kegiatan,
-            tanggal
-        )
 
-        return redirect("/admin")
+        # ✅ GENERATE PDF SESUAI PILIHAN
+        if format_sertifikat == "landscape":
+            generate_pdf_sertifikat_landscape(
+                nomor_seri, nama, jenis, kegiatan, tanggal
+            )
 
-    return render_template("admin.html")
+        elif format_sertifikat == "portrait":
+            generate_pdf_sertifikat(
+                nomor_seri, nama, jenis, kegiatan, tanggal
+            )
+
+        elif format_sertifikat == "duo":
+            generate_pdf_sertifikat_duo(
+                nomor_seri, nama, jenis, kegiatan, tanggal
+            )
+
+        elif format_sertifikat == "logo":
+            generate_pdf_sertifikat_logo(
+                nomor_seri, nama, jenis, kegiatan, tanggal
+            )
+
+        elif format_sertifikat == "kwitansi":
+            generate_pdf_kwitansi(
+                nomor_seri, nama, jenis, kegiatan, tanggal
+            )
+
+        else:
+            generate_pdf_sertifikat(
+                nomor_seri, nama, jenis, kegiatan, tanggal
+            )
+            
+
+        # generate_qr(nomor_seri)
+
+        # generate_pdf_sertifikat_landscape(
+        #     nomor_seri, nama, jenis, kegiatan, tanggal
+        # )
+        
+        # generate_pdf_sertifikat_duo(
+        #     nomor_seri,
+        #     nama,
+        #     jenis,
+        #     kegiatan,
+        #     tanggal
+        # )
+        
+        # generate_pdf_sertifikat_logo(
+        #     nomor_seri,
+        #     nama,
+        #     jenis,
+        #     kegiatan,
+        #     tanggal
+        # )
+        
+        # generate_pdf_sertifikat(
+        #     nomor_seri,
+        #     nama,
+        #     jenis,
+        #     kegiatan,
+        #     tanggal
+        # )
+        
+        # generate_pdf_kwitansi(
+        #     nomor_seri,
+        #     nama,
+        #     jenis,
+        #     kegiatan,
+        #     tanggal
+        # )
+
+        # return redirect("/admin")
+        return redirect(f"/admin?file={pdf_file_name}")
+
+    # return render_template("admin.html")
+    file = request.args.get("file")
+    return render_template("admin.html", file=file)
 
 
 
