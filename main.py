@@ -3,7 +3,6 @@ from datetime import datetime
 import sqlite3
 import qrcode
 import os
-from reportlab.lib.utils import ImageReader
 # from reportlab.lib.pagesizes import A4
 # from reportlab.pdfgen import canvas
 # from reportlab.lib.colors import HexColor
@@ -15,27 +14,6 @@ app = Flask(__name__)
 # =====================
 def connect_db():
     return sqlite3.connect("database.db")
-
-def draw_logo_scaled(c, image_path, x, y, max_w, max_h):
-    if not os.path.exists(image_path):
-        return
-
-    img = ImageReader(image_path)
-    iw, ih = img.getSize()
-
-    scale = min(max_w / iw, max_h / ih)
-    w = iw * scale
-    h = ih * scale
-
-    c.drawImage(
-        image_path,
-        x + (max_w - w) / 2,
-        y + (max_h - h) / 2,
-        width=w,
-        height=h,
-        mask='auto'
-    )
-
 
 # =====================
 # NOMOR SERI & QR CODE
@@ -92,32 +70,18 @@ def generate_pdf_sertifikat_duo(
     c.rect(45, 45, width - 90, height - 90)
 
     # =====================
-    # LOGO KIRI (PLPN)
+    # LOGO KIRI (KOP)
     # =====================
-    logo_plpn = "static/logo.png"
-    if os.path.exists(logo_plpn):
+    logo_path = "static/logo.png"
+    if os.path.exists(logo_path):
         c.drawImage(
-            logo_plpn,
-            60,               # kiri aman dari border
-            height - 170,     # aman dari border atas
-            width=70,
-            height=70,
-            mask='auto'
-        )
-
-    # =====================
-    # LOGO KANAN (MITRA)
-    # =====================
-    logo_mitra = "static/logo.png"
-    if os.path.exists(logo_mitra):
-        c.drawImage(
-            logo_mitra,
-            width - 130,      # kanan aman dari border
-            height - 170,
-            width=70,
-            height=70,
-            mask='auto'
-        )
+        logo_path,
+        60,                 # kiri aman dari border
+        height - 170,       # aman dari border atas
+        width=70,
+        height=70,
+        mask='auto'
+    )
 
     # =====================
     # JUDUL (TENGAH)
@@ -132,6 +96,16 @@ def generate_pdf_sertifikat_duo(
         width / 2,
         height - 175,
         "PT Lembaga Persada Nusantara"
+    )
+
+    # =====================
+    # OPSIONAL: TEKS KANAN ATAS (JIKA MAU)
+    # =====================
+    c.setFont("Helvetica", 9)
+    c.drawRightString(
+        width - 60,
+        height - 140,
+        "Dokumen Resmi"
     )
 
     # =====================
