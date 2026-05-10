@@ -1025,7 +1025,19 @@ def admin():
     file = request.args.get("file")
     return render_template("admin.html", file=file)
 
+@app.route("/admin/list")
+def admin_list():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT nomor_seri, nama, jenis, kegiatan, tanggal
+        FROM sertifikat
+        ORDER BY tanggal DESC
+    """)
+    data = cursor.fetchall()
+    conn.close()
 
+    return render_template("admin_list.html", data=data)
 
 if __name__ == "__main__":
     init_db()

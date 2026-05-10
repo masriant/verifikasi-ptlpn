@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Daftar Sertifikat | Admin PLPN</title>
+  <style>
+    body { font-family: Arial; background:#f4f6f8; }
+    .box {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      font-size: 14px;
+    }
+    th {
+      background: #1f4e79;
+      color: white;
+    }
+    a {
+      color: #1f4e79;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .btn {
+      padding: 6px 10px;
+      border-radius: 4px;
+      background: #e8f4ff;
+      display: inline-block;
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>📋 Daftar Sertifikat</h2>
+
+  <p>
+    ➕ 
+    Kembali ke Input Sertifikat
+  </p>
+
+  <table>
+    <tr>
+      <th>No</th>
+      <th>Nomor Seri</th>
+      <th>Nama</th>
+      <th>Jenis</th>
+      <th>Kegiatan</th>
+      <th>Tanggal</th>
+      <th>Aksi</th>
+    </tr>
+
+    {% for row in data %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ row[0] }}</td>
+      <td>{{ row[1] }}</td>
+      <td>{{ row[2] }}</td>
+      <td>{{ row[3] }}</td>
+      <td>{{ row[4] }}</td>
+      <td>
+        🔍 Verifikasi
+        </a>
+        <a class="btn" href="/static/sertifikat/{{ row[0] }}.pdf" target="_blank">
+          ⬇️ PDF
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+</body>
+</html>
