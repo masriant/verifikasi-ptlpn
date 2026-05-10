@@ -150,8 +150,34 @@ def generate_pdf_sertifikat_landscape(nomor_seri, nama, jenis, kegiatan, tanggal
     # =====================
     c.setFont("Helvetica-Oblique", 9)
     c.drawCentredString(
-        width / 2, 45,
+        width / 2, 50, # DITURUNKAN AGAR JARAK LEBIH LAPANG DENGAN LINK VERIFIKASI 45
         "Sertifikat ini diterbitkan secara elektronik dan dapat diverifikasi melalui QR Code"
+    )
+
+    # =====================
+    # LINK VERIFIKASI (TEXT + CLICKABLE)
+    # =====================
+    verifikasi_url = f"http://127.0.0.1:5000/verifikasi/{nomor_seri}"
+
+    c.setFont("Helvetica", 9)
+    c.setFillColor(abu)
+    c.drawCentredString(
+        width / 2,
+        18, # DITURUNKAN AGAR JARAK LEBIH LAPANG DENGAN FOOTER 40
+        "Verifikasi sertifikat:"
+    )
+    c.setFillColor(HexColor("#1f4e79"))
+    c.drawCentredString(
+        width / 2,
+        8, # DITURUNKAN AGAR JARAK LEBIH LAPANG DENGAN FOOTER 28
+        verifikasi_url
+    )
+
+    # Link aktif (bisa diklik di PDF)
+    c.linkURL(
+        verifikasi_url,
+        (width/2 - 200, 8, width/2 + 200, 25),
+        relative=0
     )
 
     c.save()
@@ -376,6 +402,32 @@ def generate_pdf_sertifikat_duo(
             "Sertifikat ini diterbitkan secara elektronik dan dapat diverifikasi melalui QR Code"
         )
 
+        # =====================
+        # LINK VERIFIKASI (TEXT + CLICKABLE)
+        # =====================
+        verifikasi_url = f"http://127.0.0.1:5000/verifikasi/{nomor_seri}"
+
+        c.setFont("Helvetica", 9)
+        c.setFillColor(abu)
+        c.drawCentredString(
+            width / 2,
+            18,
+            "Verifikasi sertifikat:"
+        )
+        c.setFillColor(HexColor("#1f4e79"))
+        c.drawCentredString(
+            width / 2,
+            8,
+            verifikasi_url
+        )
+
+        # Link aktif (bisa diklik di PDF)
+        c.linkURL(
+            verifikasi_url,
+            (width/2 - 200, 8, width/2 + 200, 25),
+            relative=0
+        )
+
         c.save()
 
 
@@ -527,6 +579,32 @@ def generate_pdf_sertifikat_logo(nomor_seri, nama, jenis, kegiatan, tanggal):
             "Sertifikat ini diterbitkan secara elektronik dan dapat diverifikasi melalui QR Code"
         )
 
+    # =====================
+    # LINK VERIFIKASI (TEXT + CLICKABLE)
+    # =====================
+    verifikasi_url = f"http://127.0.0.1:5000/verifikasi/{nomor_seri}"
+
+    c.setFont("Helvetica", 9)
+    c.setFillColor(abu)
+    c.drawCentredString(
+        width / 2,
+        18,
+        "Verifikasi sertifikat:"
+    )
+    c.setFillColor(HexColor("#1f4e79"))
+    c.drawCentredString(
+        width / 2,
+        8,
+        verifikasi_url
+    )
+
+    # Link aktif (bisa diklik di PDF)
+    c.linkURL(
+        verifikasi_url,
+        (width/2 - 200, 8, width/2 + 200, 25),
+        relative=0
+    )
+
     c.save()
 
 # =====================
@@ -609,6 +687,32 @@ def generate_pdf_sertifikat(nomor_seri, nama, jenis, kegiatan, tanggal):
         "Sertifikat ini diterbitkan secara elektronik dan dapat diverifikasi melalui QR Code"
     )
 
+    # =====================
+    # LINK VERIFIKASI (TEXT + CLICKABLE)
+    # =====================
+    verifikasi_url = f"http://127.0.0.1:5000/verifikasi/{nomor_seri}"
+
+    c.setFont("Helvetica", 9)
+    c.setFillColor(abu)
+    c.drawCentredString(
+        width / 2,
+        18,
+        "Verifikasi sertifikat:"
+    )
+    c.setFillColor(HexColor("#1f4e79"))
+    c.drawCentredString(
+        width / 2,
+        8,
+        verifikasi_url
+    )
+
+    # Link aktif (bisa diklik di PDF)
+    c.linkURL(
+        verifikasi_url,
+        (width/2 - 200, 8, width/2 + 200, 25),
+        relative=0
+    )
+
     c.save()
 
 # =====================
@@ -654,6 +758,33 @@ def generate_pdf_kwitansi(nomor_seri, nama, jenis, kegiatan, tanggal):
     # QR
     qr_path = f"static/qr/{nomor_seri}.png"
     c.drawImage(qr_path, width - 150, 60, width=90, height=90)
+
+    # =====================
+    # LINK VERIFIKASI (TEXT + CLICKABLE)
+    # =====================
+    verifikasi_url = f"http://127.0.0.1:5000/verifikasi/{nomor_seri}"
+
+    c.setFont("Helvetica", 9)
+    c.setFillColor(abu)
+    c.drawCentredString(
+        width / 2,
+        18,
+        "Verifikasi sertifikat:"
+    )
+    c.setFillColor(HexColor("#1f4e79"))
+    c.drawCentredString(
+        width / 2,
+        8,
+        verifikasi_url
+    )
+
+    # Link aktif (bisa diklik di PDF)
+    c.linkURL(
+        verifikasi_url,
+        # (width/2 - 200, 20, width/2 + 200, 45),
+        (width/2 - 200, 8, width/2 + 200, 25),
+        relative=0
+    )
 
     c.save()
 
@@ -773,36 +904,80 @@ def admin():
        # ✅ GENERATE QR OTOMATIS
         generate_qr(nomor_seri)
 
-        # ✅ GENERATE PDF SESUAI PILIHAN
+        # Generate PDF sesuai pilihan
         if format_sertifikat == "landscape":
+
+            pdf_file_name = f"{nomor_seri}_LANDSCAPE.pdf"
+
             generate_pdf_sertifikat_landscape(
-                nomor_seri, nama, jenis, kegiatan, tanggal
+                nomor_seri,
+                nama,
+                jenis,
+                kegiatan,
+                tanggal
             )
 
         elif format_sertifikat == "portrait":
+
+            pdf_file_name = f"{nomor_seri}.pdf"
+
             generate_pdf_sertifikat(
-                nomor_seri, nama, jenis, kegiatan, tanggal
+                nomor_seri,
+                nama,
+                jenis,
+                kegiatan,
+                tanggal
             )
 
         elif format_sertifikat == "duo":
+
+            pdf_file_name = f"{nomor_seri}.pdf"
+
             generate_pdf_sertifikat_duo(
-                nomor_seri, nama, jenis, kegiatan, tanggal
+                nomor_seri,
+                nama,
+                jenis,
+                kegiatan,
+                tanggal
             )
 
         elif format_sertifikat == "logo":
+
+            pdf_file_name = f"{nomor_seri}.pdf"
+
             generate_pdf_sertifikat_logo(
-                nomor_seri, nama, jenis, kegiatan, tanggal
+                nomor_seri,
+                nama,
+                jenis,
+                kegiatan,
+                tanggal
             )
 
         elif format_sertifikat == "kwitansi":
+
+            pdf_file_name = f"{nomor_seri}.pdf"
+
             generate_pdf_kwitansi(
-                nomor_seri, nama, jenis, kegiatan, tanggal
+                nomor_seri,
+                nama,
+                jenis,
+                kegiatan,
+                tanggal
             )
 
         else:
+
+            pdf_file_name = f"{nomor_seri}.pdf"
+
             generate_pdf_sertifikat(
-                nomor_seri, nama, jenis, kegiatan, tanggal
+                nomor_seri,
+                nama,
+                jenis,
+                kegiatan,
+                tanggal
             )
+
+        return redirect(f"/admin?file={pdf_file_name}")
             
 
         # generate_qr(nomor_seri)
