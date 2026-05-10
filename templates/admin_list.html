@@ -44,11 +44,28 @@
 
 <div class="box">
   <h2>📋 Daftar Sertifikat</h2>
-
+    <form method="get" style="margin-bottom:20px;">
+    <input
+        type="text"
+        name="q"
+        placeholder="Cari nomor seri, nama, jenis, atau kegiatan…"
+        value="{{ keyword }}"
+        style="padding:8px; width:300px;"
+    >
+    <button type="submit" style="padding:8px;">
+        🔍 Cari
+    </button>
+    <a href="/admin/list" style="margin-left:10px;">Reset</a>
+    </form>
   <p>
     ➕ 
-    Kembali ke Input Sertifikat
+     <a href="/admin">Kembali ke Input Sertifikat</a>
   </p>
+  <div style="margin-bottom:15px;">
+  📄 Export:
+    <a href="/admin/export/pdf/2026" class="btn">PDF 2026</a>
+    <a href="/admin/export/excel/2026" class="btn">Excel 2026</a>
+  </div>
 
   <table>
     <tr>
@@ -70,12 +87,13 @@
       <td>{{ row[3] }}</td>
       <td>{{ row[4] }}</td>
       <td>
-        🔍 Verifikasi
+        <a class="btn" href="/verifikasi/{{ row[0] }}" target="_blank">
+            🔍 Verifikasi
         </a>
         <a class="btn" href="/static/sertifikat/{{ row[0] }}.pdf" target="_blank">
-          ⬇️ PDF
+            ⬇️ PDF
         </a>
-      </td>
+        </td>
     </tr>
     {% endfor %}
   </table>

@@ -42,3 +42,6 @@ pip install qrcode[pil]
 
 pip install reportlab
 
+DELETE FROM sertifikat;
+ATAU
+rm database.db

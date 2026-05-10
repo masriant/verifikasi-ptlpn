@@ -820,6 +820,8 @@ def generate_nomor_seri(jenis):
         "Panitia": "PNT"
     }.get(jenis, "UNK")
 
+    prefix = f"PLPN-{tahun}-{kode}-"
+
     conn = connect_db()
     cursor = conn.cursor()
 
@@ -829,7 +831,7 @@ def generate_nomor_seri(jenis):
         WHERE nomor_seri LIKE ?
         ORDER BY nomor_seri DESC
         LIMIT 1
-    """, (f"PLPN-{tahun}-{kode}-%",))
+    """, (f"{prefix}%",))
 
     last = cursor.fetchone()
     conn.close()
@@ -840,7 +842,7 @@ def generate_nomor_seri(jenis):
     else:
         next_number = 1
 
-    return f"PLPN-{tahun}-{kode}-{str(next_number).zfill(4)}"
+    return f"{prefix}{str(next_number).zfill(4)}"
     
 # =========================
 # ROUTE VERIFIKASI (WAJIB)
@@ -1025,19 +1027,114 @@ def admin():
     file = request.args.get("file")
     return render_template("admin.html", file=file)
 
+# ======================
+# PANEL ADMIN LIS
+# ======================
 @app.route("/admin/list")
 def admin_list():
+    keyword = request.args.get("q", "")
+
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    if keyword:
+        cursor.execute("""
+            SELECT nomor_seri, nama, jenis, kegiatan, tanggal
+            FROM sertifikat
+            WHERE nomor_seri LIKE ?
+               OR nama LIKE ?
+               OR jenis LIKE ?
+               OR kegiatan LIKE ?
+            ORDER BY tanggal DESC
+        """, (
+            f"%{keyword}%",
+            f"%{keyword}%",
+            f"%{keyword}%",
+            f"%{keyword}%"
+        ))
+    else:
+        cursor.execute("""
+            SELECT nomor_seri, nama, jenis, kegiatan, tanggal
+            FROM sertifikat
+            ORDER BY tanggal DESC
+        """)
+
+    data = cursor.fetchall()
+    conn.close()
+
+    return render_template("admin_list.html", data=data, keyword=keyword)
+
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+
+# ======================
+# PANEL ADMIN EXPORT PDF TAHUN
+# ======================
+@app.route("/admin/export/pdf/<int:tahun>")
+def export_pdf_tahun(tahun):
     conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT nomor_seri, nama, jenis, kegiatan, tanggal
         FROM sertifikat
-        ORDER BY tanggal DESC
-    """)
+        WHERE nomor_seri LIKE ?
+        ORDER BY tanggal ASC
+    """, (f"PLPN-{tahun}-%",))
     data = cursor.fetchall()
     conn.close()
 
-    return render_template("admin_list.html", data=data)
+    file_path = f"static/laporan/Laporan_Sertifikat_{tahun}.pdf"
+    os.makedirs("static/laporan", exist_ok=True)
+
+    c = canvas.Canvas(file_path, pagesize=A4)
+    w, h = A4
+
+    c.setFont("Helvetica-Bold", 16)
+    c.drawCentredString(w/2, h-50, f"LAPORAN SERTIFIKAT TAHUN {tahun}")
+    c.setFont("Helvetica", 10)
+
+    y = h - 90
+    for i, row in enumerate(data, start=1):
+        if y < 60:
+            c.showPage()
+            y = h - 60
+        c.drawString(40, y, f"{i}. {row[0]} | {row[1]} | {row[2]} | {row[3]} | {row[4]}")
+        y -= 14
+
+    c.save()
+    return redirect(f"/{file_path}")
+
+# ======================
+# PANEL ADMIN EXPORT EXCEL TAHUN
+# ======================
+from openpyxl import Workbook
+
+@app.route("/admin/export/excel/<int:tahun>")
+def export_excel_tahun(tahun):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT nomor_seri, nama, jenis, kegiatan, tanggal
+        FROM sertifikat
+        WHERE nomor_seri LIKE ?
+        ORDER BY tanggal ASC
+    """, (f"PLPN-{tahun}-%",))
+    data = cursor.fetchall()
+    conn.close()
+
+    os.makedirs("static/laporan", exist_ok=True)
+    file_path = f"static/laporan/Laporan_Sertifikat_{tahun}.xlsx"
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = f"Laporan {tahun}"
+
+    ws.append(["No", "Nomor Seri", "Nama", "Jenis", "Kegiatan", "Tanggal"])
+    for i, row in enumerate(data, start=1):
+        ws.append([i, *row])
+
+    wb.save(file_path)
+    return redirect(f"/{file_path}")
 
 if __name__ == "__main__":
     init_db()
